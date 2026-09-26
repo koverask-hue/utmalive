@@ -36,7 +36,9 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
   const past = streams.filter((s) => s.ended_at);
   const totals = [...sales.values()].reduce((a, s) => ({ t: a.t + s.tickets, r: a.r + s.revenue_cents }), { t: 0, r: 0 });
   const liveNow = details.filter((d) => d.status === "active").length;
-  const defaultPrice = Number(process.env.DEFAULT_PRICE_CENTS ?? 200) / 100;
+  // DEFAULT_PRICE_CENTS is in cents (200 = €2); anything unusable falls back to €2.
+  const configured = Number(process.env.DEFAULT_PRICE_CENTS) / 100;
+  const defaultPrice = Number.isFinite(configured) && configured >= 0.5 ? configured : 2;
 
   return (
     <section className="studio">
