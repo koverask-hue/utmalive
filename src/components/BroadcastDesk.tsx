@@ -115,7 +115,7 @@ export default function BroadcastDesk({ room, onChange }: { room: Room; onChange
           ? "Permission blocked. Allow it in your browser's site settings, then try again."
           : /NotFound|Requested device not found/i.test(text)
             ? "No device found. Plug one in or pick another."
-            : "That source couldn't start. Close other apps using it and try again.",
+            : `Couldn't start: ${text.trim().slice(0, 160)}`,
         "error",
       );
     },
@@ -127,24 +127,36 @@ export default function BroadcastDesk({ room, onChange }: { room: Room; onChange
       setBusy(what);
       try {
         if (what === "screen") {
-          const q = QUALITY[quality].preset;
-          await lp.setScreenShareEnabled(
-            !screenOn,
-            {
-              audio: true,
-              contentHint: mode,
-              selfBrowserSurface: "exclude",
-              systemAudio: "include",
-              // Safari captures at low resolution if one is specified.
-              ...(isSafari() ? {} : { resolution: q.resolution }),
-            },
-            {
-              screenShareEncoding: q.encoding,
-              videoCodec: "vp9",
-              backupCodec: true,
-              degradationPreference: mode === "motion" ? "maintain-framerate" : "maintain-resolution",
-            },
-          );
+          if (screenOn) {
+            await lp.setScreenShareEnabled(false);
+          } else {
+            const q = QUALITY[quality].preset;
+            try {
+              await lp.setScreenShareEnabled(
+                true,
+                {
+                  audio: true,
+                  contentHint: mode,
+                  selfBrowserSurface: "exclude",
+                  // Safari captures at low resolution if one is specified.
+                  ...(isSafari() ? {} : { resolution: q.resolution }),
+                },
+                {
+                  screenShareEncoding: q.encoding,
+                  videoCodec: "vp9",
+                  backupCodec: true,
+                  degradationPreference: mode === "motion" ? "maintain-framerate" : "maintain-resolution",
+                },
+              );
+            } catch (err) {
+              // The user closing the picker isn't a failure worth retrying.
+              if (err instanceof Error && /NotAllowed|denied|Permission/i.test(err.name + err.message)) throw err;
+              console.warn("Screen share failed with high settings, retrying with safe ones", err);
+              await lp.setScreenShareEnabled(false).catch(() => {});
+              await lp.setScreenShareEnabled(true, { audio: false }, { videoCodec: "vp8", screenShareEncoding: QUALITY.hd.preset.encoding });
+              toast("Sharing in safe mode (1080p30). Your browser rejected the higher settings.", "gold");
+            }
+          }
         }
         if (what === "camera") await lp.setCameraEnabled(!camOn, { resolution: QUALITY.hd.preset.resolution }, { videoCodec: "vp9", backupCodec: true });
         if (what === "mic") await lp.setMicrophoneEnabled(!micOn, { echoCancellation: true, noiseSuppression: true, autoGainControl: true });
