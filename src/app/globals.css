@@ -68,8 +68,7 @@ p { margin: 0; }
 .nebula {
   position: absolute; inset: -20%;
   background:
-    radial-gradient(40% 35% at 80% 10%, rgba(92, 119, 214, 0.14), transparent 70%),
-    radial-gradient(35% 30% at 10% 90%, rgba(255, 59, 78, 0.1), transparent 70%),
+
     var(--void);
   animation: drift 90s ease-in-out infinite alternate;
 }
@@ -526,40 +525,14 @@ body.theater .screen { max-height: calc(100dvh - 190px); aspect-ratio: auto; hei
 @keyframes tally { 50% { filter: drop-shadow(0 0 14px rgba(255, 59, 78, 0.8)); } }
 .landing-mark { margin-bottom: 0.4rem; }
 
-/* ---------- Start page poster ---------- */
-.poster { display: grid; gap: 1.6rem; max-width: 60rem; padding-top: clamp(0.5rem, 5vh, 3rem); }
-.poster-top { display: flex; align-items: center; gap: 1rem; }
-.poster-status { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.8rem; border-radius: 999px; font-weight: 600; font-size: 0.88rem; color: var(--dust); box-shadow: inset 0 0 0 1px var(--line-strong); }
-.poster-status i { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--dust); }
-.poster-status.live { color: #fff; background: var(--signal); box-shadow: none; }
-.poster-status.live i { background: #fff; box-shadow: none; animation: blink 1.2s steps(2, jump-none) infinite; }
-.poster-title {
-  font-family: var(--font-display); font-weight: 800; letter-spacing: -0.035em; line-height: 0.92;
-  font-size: clamp(2.8rem, 1rem + 7.5vw, 7.2rem); overflow-wrap: anywhere; animation: rise 0.9s 0.6s var(--ease) both;
-}
-.poster-title.quiet { font-size: clamp(2.2rem, 1rem + 4vw, 4rem); color: var(--dust); }
-.poster-meta { display: flex; align-items: stretch; gap: 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
-.poster-meta > span { display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1.4rem 0.9rem 0; font-size: 1.15rem; font-weight: 600; }
-.poster-meta > span + span { padding-left: 1.4rem; border-left: 1px solid var(--line-strong); }
-.poster-meta small { display: block; font-size: 0.75rem; font-weight: 500; color: var(--dust); }
-.poster-host > span { display: grid; }
-.poster-price { display: grid !important; gap: 0; color: var(--ticket); font-family: var(--font-display); }
-.poster-price small { font-family: var(--font-body); }
-.poster-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-.poster-how { max-width: 38rem; color: var(--dust); }
-.poster-more { margin-top: 1rem; }
-.poster-more h2 { font-size: 0.95rem; margin-bottom: 0.6rem; color: var(--dust); font-family: var(--font-body); font-weight: 600; }
-.poster-more ul { list-style: none; margin: 0; padding: 0; }
-.poster-more li { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 1rem; padding: 0.75rem 0; border-top: 1px solid var(--line); }
-.poster-more-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 760px) {
-  .poster-meta { flex-direction: column; }
-  .poster-meta > span + span { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
-  .poster-more li { grid-template-columns: auto 1fr auto; }
-  .poster-more li .muted { display: none; }
-}
-
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* ---------- Start page ---------- */
+.poster { display: grid; justify-items: start; align-content: center; gap: 1.2rem; min-height: 62vh; max-width: 56rem; }
+.poster-live { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--signal); font-weight: 600; }
+.poster-live i { width: 9px; height: 9px; border-radius: 50%; background: var(--signal); animation: blink 1.2s steps(2, jump-none) infinite; }
+.poster-title { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.035em; line-height: 0.92; font-size: clamp(2.8rem, 1rem + 7.5vw, 7.2rem); overflow-wrap: anywhere; }
+.poster-line { font-size: 1.2rem; color: var(--dust); margin-bottom: 0.8rem; }
+.poster-join { color: var(--dust); font-size: 0.92rem; }
+.poster-join:hover { color: var(--bone); }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {

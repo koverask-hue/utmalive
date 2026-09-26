@@ -52,26 +52,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         )}
       </div>
 
-      {live.length > 0 && (
-        <div className="onair">
-          {live.slice(0, 2).map((s) => (
-            <Link key={s.id} href={`/streams/${s.id}`} className="onair-card">
-              <span className="onair-signal">
-                <i aria-hidden /> On air
-              </span>
-              <span className="onair-title">{s.title}</span>
-              <span className="onair-foot">
-                <span className="row-by">
-                  <Avatar src={s.avatar} name={s.streamer} size={24} />
-                  {s.streamer}
-                </span>
-                <span className="btn small">{s.hasTicket || s.isMine || s.priceCents === 0 ? "Watch now" : `Get ticket, ${euro(s.priceCents)}`}</span>
-              </span>
-            </Link>
-          ))}
-        </div>
-      )}
-
       {items.length === 0 ? (
         <div className="empty-state">
           <p>No streams yet.</p>
@@ -101,5 +81,5 @@ async function Landing({ error }: { error: boolean }) {
   }));
   // Live streams first, then the newest; the list is already newest first.
   items.sort((a, b) => Number(b.live) - Number(a.live));
-  return <Poster featured={items[0] ?? null} others={items.slice(1, 4)} invite={process.env.DISCORD_INVITE_URL} error={error} />;
+  return <Poster featured={items[0] ?? null} invite={process.env.DISCORD_INVITE_URL} error={error} />;
 }

@@ -49,7 +49,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             )}
           </header>
           <main id="main" className="container">{children}</main>
-          <footer className="footer">For members of the 8live Discord server.</footer>
         </ToastProvider>
       </body>
     </html>

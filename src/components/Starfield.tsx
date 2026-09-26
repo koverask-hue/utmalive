@@ -19,7 +19,7 @@ export default function Starfield() {
     let stars: Star[] = [];
     const meteors: Meteor[] = [];
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
-    let nextMeteor = 2500 + Math.random() * 4000;
+    let nextMeteor = Infinity; // no meteors: keep the sky quiet
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -28,7 +28,7 @@ export default function Starfield() {
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.round((w * h) / 2600);
+      const count = Math.round((w * h) / 6000);
       stars = Array.from({ length: count }, () => {
         const z = Math.random();
         return {
@@ -75,7 +75,7 @@ export default function Starfield() {
       if (!reduce) {
         nextMeteor -= dt;
         if (nextMeteor <= 0) {
-          nextMeteor = 5000 + Math.random() * 9000;
+          nextMeteor = Infinity;
           const speed = 0.9 + Math.random() * 0.6;
           meteors.push({ x: w * (0.3 + Math.random() * 0.7), y: -20, vx: -speed, vy: speed * 0.55, life: 1 });
         }
