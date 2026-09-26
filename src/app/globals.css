@@ -521,12 +521,27 @@ body.theater .screen { max-height: calc(100dvh - 190px); aspect-ratio: auto; hei
 
 .spinner.big { width: 34px; height: 34px; border-width: 3px; color: var(--ion); }
 
+/* ---------- Navbar ---------- */
+.topbar { padding: 0; }
+.topbar-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; max-width: 1080px; height: 64px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+body:has(.with-chat) .topbar-inner { max-width: 1340px; }
+.brand .logo { display: block; color: var(--star); }
+.nav { gap: 0.8rem; }
+.navlinks { display: flex; gap: 0.2rem; padding: 0.25rem; border-radius: 999px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px var(--line); }
+.navlinks .navlink { padding: 0.4rem 0.95rem; font-weight: 500; }
+.navlinks .navlink.active { background: rgba(122, 162, 255, 0.18); box-shadow: none; }
+.me { display: flex; align-items: center; gap: 0.55rem; margin: 0; padding: 0.2rem 0.2rem 0.2rem 0.25rem; border-left: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px var(--line); }
+.me-text { display: grid; line-height: 1.15; padding-right: 0.2rem; }
+.me-name { color: var(--star); font-weight: 600; font-size: 0.88rem; }
+.me-role { color: var(--ion); font-size: 0.72rem; font-weight: 600; }
+.me .icon-btn { width: 32px; height: 32px; border-radius: 999px; }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {
   .create-grid, .obs { grid-template-columns: 1fr; }
   .preview .ticket { transform: none; }
-  .me-name, .me .pill { display: none; }
-  .me { margin-left: 0.2rem; padding-left: 0.5rem; }
+  .me-text { display: none; }
+  .nav { gap: 0.4rem; }
   .navlink { padding: 0.4rem 0.6rem; }
   .ticket { grid-template-columns: 1fr; }
   .ticket-main { border-radius: var(--radius-m) var(--radius-m) 0 0; -webkit-mask: none; mask: none; }

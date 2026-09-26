@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import Starfield from "@/components/Starfield";
 import NavLinks from "@/components/NavLinks";
 import Avatar from "@/components/Avatar";
+import Logo from "@/components/Logo";
 import { ToastProvider } from "@/components/Toast";
 import { LogoutIcon } from "@/components/icons";
 import "./globals.css";
@@ -28,25 +29,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ToastProvider>
           <a href="#main" className="skip">Skip to content</a>
           <header className="topbar">
-            <Link href="/" className="brand" aria-label="8live home">
-              <span className="brand-mark" aria-hidden />
-              <span>8<span className="brand-live">live</span></span>
-            </Link>
-            {session && (
-              <nav className="nav" aria-label="Main">
-                <NavLinks isStreamer={session.isStreamer} />
-                <span className="me">
-                  <Avatar src={session.avatar} name={session.name} />
-                  <span className="me-name">{session.name}</span>
-                  {session.isStreamer && <span className="pill small">Streamer</span>}
-                </span>
-                <form action="/api/auth/logout" method="post">
-                  <button className="icon-btn" aria-label="Log out" title="Log out">
-                    <LogoutIcon />
-                  </button>
-                </form>
-              </nav>
-            )}
+            <div className="topbar-inner">
+              <Link href="/" className="brand" aria-label="8live home">
+                <Logo height={28} />
+              </Link>
+              {session && (
+                <nav className="nav" aria-label="Main">
+                  <div className="navlinks">
+                    <NavLinks isStreamer={session.isStreamer} />
+                  </div>
+                  <div className="me">
+                    <Avatar src={session.avatar} name={session.name} size={28} />
+                    <span className="me-text">
+                      <span className="me-name">{session.name}</span>
+                      {session.isStreamer && <span className="me-role">Streamer</span>}
+                    </span>
+                    <form action="/api/auth/logout" method="post">
+                      <button className="icon-btn" aria-label="Log out" title="Log out">
+                        <LogoutIcon />
+                      </button>
+                    </form>
+                  </div>
+                </nav>
+              )}
+            </div>
           </header>
           <main id="main" className="container">{children}</main>
           <footer className="footer">For members of the 8live Discord server.</footer>
