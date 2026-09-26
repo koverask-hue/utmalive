@@ -1,13 +1,13 @@
 import Mux from "@mux/mux-node";
-import { env } from "./env";
+import { env, envAny } from "./env";
 
 export const MUX_RTMP_URL = "rtmps://global-live.mux.com:443/app";
 
 let client: Mux | null = null;
 export function mux() {
   client ??= new Mux({
-    tokenId: env("MUX_TOKEN_ID"),
-    tokenSecret: env("MUX_TOKEN_SECRET"),
+    tokenId: envAny("UTMALIVE_TOKEN_ID", "MUX_TOKEN_ID"),
+    tokenSecret: envAny("UTMALIVE_TOKEN_SECRET", "MUX_TOKEN_SECRET"),
     jwtSigningKey: env("MUX_SIGNING_KEY_ID"),
     jwtPrivateKey: env("MUX_SIGNING_KEY_PRIVATE"),
   });
