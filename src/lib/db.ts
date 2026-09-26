@@ -1,9 +1,9 @@
 import { neon } from "@neondatabase/serverless";
-import { env } from "./env";
+import { envAny } from "./env";
 
 let client: ReturnType<typeof neon> | null = null;
 function sql() {
-  client ??= neon(env("DATABASE_URL"));
+  client ??= neon(envAny("DATABASE_URL", "UTMALIVE_URL", "UTMALIVE_DATABASE_URL", "POSTGRES_URL"));
   return client;
 }
 
