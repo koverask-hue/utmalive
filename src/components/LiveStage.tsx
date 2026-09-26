@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Room, RoomEvent, Track, type Participant } from "livekit-client";
+import { Room, RoomEvent, ScreenSharePresets, Track, VideoPresets, type Participant } from "livekit-client";
 import ReactionLayer from "./ReactionLayer";
 import ShareButton from "./ShareButton";
 import LiveTimer from "./LiveTimer";
@@ -13,7 +13,17 @@ type Props = { streamId: string; title: string; streamerId: string; streamerName
 // Plays the stream for ticket holders; for the streamer it is also the control desk.
 export default function LiveStage({ streamId, title, streamerId, streamerName, broadcaster }: Props) {
   const toast = useToast();
-  const [room] = useState(() => new Room({ adaptiveStream: true, dynacast: true }));
+  // Screen share at 1080p30 (LiveKit's default is 15 fps, too choppy for games); camera 720p30.
+  // Viewers on slow connections automatically get lower simulcast layers.
+  const [room] = useState(
+    () =>
+      new Room({
+        adaptiveStream: true,
+        dynacast: true,
+        videoCaptureDefaults: { resolution: VideoPresets.h720.resolution },
+        publishDefaults: { screenShareEncoding: ScreenSharePresets.h1080fps30.encoding, simulcast: true },
+      }),
+  );
   const [state, setState] = useState<"connecting" | "ready" | "error">("connecting");
   const [error, setError] = useState("");
   const [, bump] = useState(0);
@@ -90,7 +100,7 @@ export default function LiveStage({ streamId, title, streamerId, streamerName, b
       setBusy(what);
       const lp = room.localParticipant;
       try {
-        if (what === "screen") await lp.setScreenShareEnabled(!lp.isScreenShareEnabled, { audio: true, contentHint: "motion", selfBrowserSurface: "exclude" });
+        if (what === "screen") await lp.setScreenShareEnabled(!lp.isScreenShareEnabled, { audio: true, contentHint: "motion", selfBrowserSurface: "exclude", resolution: ScreenSharePresets.h1080fps30.resolution });
         if (what === "camera") await lp.setCameraEnabled(!lp.isCameraEnabled);
         if (what === "mic") await lp.setMicrophoneEnabled(!lp.isMicrophoneEnabled);
       } catch (err) {
