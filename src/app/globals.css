@@ -1,4 +1,4 @@
-/* UTMA Live
+/* 8live
    Palette: void (sky), starlight (text), dust (quiet text), ion (actions),
    signal (anything live), ticket gold (anything paid). Gold and signal are
    never decoration: gold means money or a ticket, red means on air. */
@@ -85,7 +85,7 @@ p { margin: 0; }
   border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 0.55rem; color: var(--star); text-decoration: none; font-family: var(--font-display); font-weight: 800; letter-spacing: 0.02em; }
-.brand-live { font-weight: 400; color: var(--dust); margin-left: 0.2rem; }
+.brand-live { font-weight: 400; color: var(--dust); margin-left: 0.05rem; }
 .brand-mark { position: relative; width: 12px; height: 12px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 12px var(--signal); }
 .brand-mark::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1.5px solid rgba(255, 77, 106, 0.45); }
 

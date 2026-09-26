@@ -99,7 +99,7 @@ async function Landing({ error }: { error: boolean }) {
           </span>
         )}
         <h1 className="display">Live from the server.</h1>
-        <p className="lede">Streams for members of the UTMA Discord. Log in with the account you use there, grab a ticket, and watch.</p>
+        <p className="lede">Streams for members of the 8live Discord. Log in with the account you use there, grab a ticket, and watch.</p>
         {error && <p className="error" role="alert">Discord login didn&apos;t finish. Try again, and approve the request on Discord&apos;s page.</p>}
         <div className="join-steps">
           {invite && (

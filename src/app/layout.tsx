@@ -13,8 +13,8 @@ const display = Unbounded({ subsets: ["latin"], variable: "--font-display", weig
 const body = Instrument_Sans({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
-  title: { default: "UTMA Live", template: "%s | UTMA Live" },
-  description: "Live streams for members of the UTMA Discord server.",
+  title: { default: "8live", template: "%s | 8live" },
+  description: "Live streams for members of the 8live Discord server.",
 };
 
 export const viewport: Viewport = { themeColor: "#060816", colorScheme: "dark" };
@@ -28,9 +28,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ToastProvider>
           <a href="#main" className="skip">Skip to content</a>
           <header className="topbar">
-            <Link href="/" className="brand" aria-label="UTMA Live home">
+            <Link href="/" className="brand" aria-label="8live home">
               <span className="brand-mark" aria-hidden />
-              UTMA<span className="brand-live">Live</span>
+              8<span className="brand-live">live</span>
             </Link>
             {session && (
               <nav className="nav" aria-label="Main">
@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             )}
           </header>
           <main id="main" className="container">{children}</main>
-          <footer className="footer">For members of the UTMA Discord server.</footer>
+          <footer className="footer">For members of the 8live Discord server.</footer>
         </ToastProvider>
       </body>
     </html>

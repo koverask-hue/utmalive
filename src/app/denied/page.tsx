@@ -7,7 +7,7 @@ export default function Denied() {
     <section className="center-card">
       <h1>Members only</h1>
       <p className="muted">
-        Your Discord account isn&apos;t in the UTMA server, or it doesn&apos;t have the verified role yet. Join the server,
+        Your Discord account isn&apos;t in the 8live server, or it doesn&apos;t have the verified role yet. Join the server,
         get verified, then log in again.
       </p>
       <div className="join-steps">

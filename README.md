@@ -1,4 +1,4 @@
-# UTMA Live
+# 8live
 
 Members-only live streaming. Viewers log in with Discord, buy a ticket per stream through Whop, and watch. Users with the streamer role go live from their browser.
 
