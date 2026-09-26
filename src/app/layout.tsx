@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Unbounded, Instrument_Sans } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { getSession } from "@/lib/session";
 import Starfield from "@/components/Starfield";
 import NavLinks from "@/components/NavLinks";
@@ -10,8 +10,8 @@ import { ToastProvider } from "@/components/Toast";
 import { LogoutIcon } from "@/components/icons";
 import "./globals.css";
 
-const display = Unbounded({ subsets: ["latin"], variable: "--font-display", weight: ["400", "600", "800"] });
-const body = Instrument_Sans({ subsets: ["latin"], variable: "--font-body" });
+// One family: condensed heavy for headlines, normal width for text.
+const archivo = Archivo({ subsets: ["latin", "latin-ext"], variable: "--font-archivo", axes: ["wdth"] });
 
 export const metadata: Metadata = {
   title: { default: "8live", template: "%s | 8live" },
@@ -23,7 +23,7 @@ export const viewport: Viewport = { themeColor: "#07080D", colorScheme: "dark" }
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={archivo.variable}>
       <body>
         <Starfield />
         <ToastProvider>
