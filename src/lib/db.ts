@@ -3,7 +3,7 @@ import { envAny } from "./env";
 
 let client: ReturnType<typeof neon> | null = null;
 function sql() {
-  client ??= neon(envAny("DATABASE_URL", "UTMALIVE_URL", "UTMALIVE_DATABASE_URL", "POSTGRES_URL"));
+  client ??= neon(envAny("UTMALIVE_URL", "UTMALIVE_DATABASE_URL", "DATABASE_URL", "POSTGRES_URL"));
   return client;
 }
 
