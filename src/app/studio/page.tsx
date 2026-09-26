@@ -7,7 +7,8 @@ import { euro, timeAgo } from "@/lib/format";
 import PricePicker from "@/components/PricePicker";
 import ConfirmEnd from "@/components/ConfirmEnd";
 import SubmitButton from "@/components/SubmitButton";
-import { createStream, endStream } from "./actions";
+import { createStream, endStream, removeStream } from "./actions";
+import DeleteStream from "@/components/DeleteStream";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Studio" };
@@ -77,7 +78,7 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
       </form>
 
       <h2 className="section-title">Open streams</h2>
-      {open.length === 0 && <p className="empty">No open streams. Create one above to get your OBS key.</p>}
+      {open.length === 0 && <p className="empty">No open streams. Create one above to go live.</p>}
       <div className="stack">
         {open.map((s, i) => {
           const live = details[i].status === "active";
@@ -116,6 +117,7 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
                 <th>Ended</th>
                 <th className="num">Tickets</th>
                 <th className="num">Revenue</th>
+                <th><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody>
@@ -125,6 +127,9 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
                   <td className="muted">{timeAgo(s.ended_at!)}</td>
                   <td className="num tabular">{sales.get(s.id)?.tickets ?? 0}</td>
                   <td className="num tabular">{euro(sales.get(s.id)?.revenue_cents ?? 0)}</td>
+                  <td className="num">
+                    <DeleteStream id={s.id} title={s.title} action={removeStream} />
+                  </td>
                 </tr>
               ))}
             </tbody>

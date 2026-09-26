@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStreamer } from "@/lib/session";
-import { getStream, insertStream, markStreamEnded } from "@/lib/db";
+import { deleteStream, getStream, insertStream, markStreamEnded } from "@/lib/db";
 import { closeRoom } from "@/lib/live";
 
 export async function createStream(formData: FormData) {
@@ -42,4 +42,12 @@ export async function endStream(formData: FormData) {
   await markStreamEnded(stream.id);
   revalidatePath("/studio");
   redirect("/studio");
+}
+
+// Past streams only; open ones must be ended first.
+export async function removeStream(formData: FormData) {
+  const session = await requireStreamer();
+  await deleteStream(String(formData.get("id") ?? ""), session.id);
+  revalidatePath("/studio");
+  revalidatePath("/");
 }

@@ -144,3 +144,8 @@ export async function postChat(m: {
   `) as { id: string }[];
   return rows[0]?.id ?? null;
 }
+
+// Removes a stream with its tickets and chat (ON DELETE CASCADE).
+export async function deleteStream(id: string, streamerId: string) {
+  await sql()`DELETE FROM streams WHERE id = ${id} AND streamer_id = ${streamerId} AND ended_at IS NOT NULL`;
+}
