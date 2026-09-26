@@ -20,7 +20,11 @@ export function optionalEnv(name: string): string | undefined {
 
 export function appUrl(): string {
   const explicit = optionalEnv("APP_URL");
-  if (explicit) return explicit.replace(/\/$/, "");
+  const onVercel = !!optionalEnv("VERCEL");
+  // Ignore a localhost APP_URL copied into Vercel from .env.example.
+  if (explicit && !(onVercel && /localhost|127\.0\.0\.1/.test(explicit))) {
+    return explicit.replace(/\/$/, "");
+  }
   // Set automatically by Vercel, so production works even without APP_URL.
   const vercel = optionalEnv("VERCEL_PROJECT_PRODUCTION_URL");
   return vercel ? `https://${vercel}` : "http://localhost:3000";
