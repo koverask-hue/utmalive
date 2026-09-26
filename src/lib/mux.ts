@@ -69,3 +69,16 @@ export async function playbackTokens(playbackId: string) {
   ]);
   return { playback, thumbnail };
 }
+
+// Concurrent viewers from Mux Data. Null when there's no data yet.
+export async function viewerCount(liveStreamId: string): Promise<number | null> {
+  try {
+    const token = await mux().jwt.signViewerCounts(liveStreamId, { type: "live_stream", expiration: "5m" });
+    const res = await fetch(`https://stats.mux.com/counts?token=${token}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { data?: { viewers?: number }[] };
+    return json.data?.[0]?.viewers ?? null;
+  } catch {
+    return null;
+  }
+}

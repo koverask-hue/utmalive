@@ -354,6 +354,61 @@ input::placeholder { color: rgba(138, 147, 184, 0.7); }
 .center-card { display: grid; justify-items: center; text-align: center; gap: 1rem; max-width: 30rem; margin: clamp(1rem, 8vh, 5rem) auto 0; }
 .big-code { font-family: var(--font-display); font-weight: 800; font-size: clamp(4rem, 3rem + 6vw, 7rem); line-height: 1; color: transparent; -webkit-text-stroke: 1.5px var(--ion); opacity: 0.7; }
 
+
+/* ---------- Chat ---------- */
+.container:has(.with-chat) { max-width: 1340px; }
+.with-chat { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1rem; align-items: start; }
+.watch-meta { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.viewers { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--dust); font-size: 0.9rem; }
+.small { font-size: 0.8rem; }
+
+.chat {
+  position: sticky; top: 76px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto;
+  height: min(640px, calc(100dvh - 120px)); border-radius: var(--radius-l); overflow: hidden;
+  background: var(--glass-strong); border: 1px solid var(--line); backdrop-filter: blur(10px);
+}
+.chat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); }
+.chat-head h2 { font-size: 0.95rem; }
+.chat-list { list-style: none; margin: 0; padding: 0.6rem 0.4rem 0.6rem 0.8rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.chat-note { color: var(--dust); font-size: 0.88rem; text-align: center; padding: 2rem 0.5rem; }
+.msg { display: grid; grid-template-columns: 26px 1fr; gap: 0.55rem; padding: 0.35rem 0.4rem; border-radius: var(--radius-s); animation: pop 0.25s var(--ease); }
+.msg:hover { background: rgba(122, 162, 255, 0.05); }
+.msg.grouped { padding-top: 0; }
+.msg.grouped .msg-body { grid-column: 2; }
+.msg.pending { opacity: 0.55; }
+.msg-body { min-width: 0; }
+.msg-meta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; margin-bottom: 0.1rem; }
+.msg-name { font-weight: 600; color: #c6cdea; }
+.msg.mine .msg-name { color: var(--ion); }
+.msg-name.streamer { color: var(--ticket); }
+.msg time { color: var(--dust); opacity: 0; transition: opacity 0.2s; font-size: 0.72rem; }
+.msg:hover time { opacity: 1; }
+.msg p { font-size: 0.93rem; overflow-wrap: anywhere; }
+.unseen { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); border: 0; border-radius: 999px; padding: 0.4rem 0.9rem; background: var(--ion); color: var(--void); font: 600 0.8rem var(--font-body); cursor: pointer; box-shadow: 0 8px 20px -6px var(--ion); animation: pop 0.25s var(--ease); }
+.reactions { display: flex; justify-content: space-between; gap: 0.2rem; padding: 0.4rem 0.7rem; border-top: 1px solid var(--line); }
+.reactions button { flex: 1; border: 0; background: transparent; font-size: 1.15rem; padding: 0.3rem 0; border-radius: var(--radius-s); cursor: pointer; transition: transform 0.15s var(--ease), background 0.2s; }
+.reactions button:hover { background: rgba(122, 162, 255, 0.1); transform: translateY(-2px) scale(1.12); }
+.reactions button:active { transform: scale(0.9); }
+.chat-form { position: relative; display: flex; gap: 0.4rem; padding: 0.6rem 0.7rem 0.8rem; }
+.chat-form input { border-radius: 999px; padding: 0.55rem 0.9rem; }
+.chat-count { position: absolute; right: 5.6rem; top: 50%; transform: translateY(-60%); font-size: 0.72rem; color: var(--dust); }
+
+.reaction-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.reaction-layer span { position: absolute; bottom: 8%; font-size: 1.9rem; animation: float-up linear forwards; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+@keyframes float-up {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  12% { transform: translate(calc(var(--drift) * 0.2), -30px) scale(1.1); opacity: 1; }
+  100% { transform: translate(var(--drift), -320px) scale(0.9); opacity: 0; }
+}
+
+body.theater .with-chat { grid-template-columns: minmax(0, 1fr) 320px; }
+
+@media (max-width: 980px) {
+  .with-chat { grid-template-columns: 1fr; }
+  .chat { position: relative; top: 0; height: 460px; }
+  .stage-tools .btn[aria-pressed] { display: none; }
+}
+
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {
   .create-grid, .obs { grid-template-columns: 1fr; }

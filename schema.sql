@@ -25,3 +25,17 @@ CREATE INDEX IF NOT EXISTS purchases_stream_user ON purchases (stream_id, discor
 
 -- Upgrades for databases created before these columns existed.
 ALTER TABLE streams ADD COLUMN IF NOT EXISTS streamer_avatar TEXT;
+
+-- Live chat and emoji reactions (kind = 'msg' or 'react').
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id           BIGSERIAL PRIMARY KEY,
+  stream_id    TEXT NOT NULL REFERENCES streams(id) ON DELETE CASCADE,
+  discord_id   TEXT NOT NULL,
+  name         TEXT NOT NULL,
+  avatar       TEXT,
+  kind         TEXT NOT NULL DEFAULT 'msg' CHECK (kind IN ('msg', 'react')),
+  body         TEXT NOT NULL CHECK (char_length(body) BETWEEN 1 AND 300),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS chat_stream_id ON chat_messages (stream_id, id);

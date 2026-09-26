@@ -13,6 +13,8 @@ import LiveTimer from "@/components/LiveTimer";
 import Ticket from "@/components/Ticket";
 import Avatar from "@/components/Avatar";
 import SubmitButton from "@/components/SubmitButton";
+import Chat from "@/components/Chat";
+import ViewerCount from "@/components/ViewerCount";
 
 export const dynamic = "force-dynamic";
 
@@ -74,11 +76,13 @@ export default async function WatchPage({ params, searchParams }: Props) {
 
   const info = await liveInfo(stream.mux_live_stream_id);
   const welcome = ticket === "1" && <TicketWelcome streamId={stream.id} />;
+  const me = { name: session.name, avatar: session.avatar };
 
   if (info.status !== "active") {
     return (
-      <section>
+      <section className="with-chat">
         {welcome}
+        <div>
         <WaitingRoom
           title={stream.title}
           message={
@@ -92,6 +96,8 @@ export default async function WatchPage({ params, searchParams }: Props) {
             <Link href="/studio" className="btn ghost">Open Studio</Link>
           </p>
         )}
+        </div>
+        <Chat streamId={stream.id} me={me} live={false} />
       </section>
     );
   }
@@ -111,9 +117,15 @@ export default async function WatchPage({ params, searchParams }: Props) {
             </span>
           </p>
         </div>
-        {!isOwner && <span className="pill gold">Ticket No. {serial}</span>}
+        <div className="watch-meta">
+          <ViewerCount streamId={stream.id} />
+          {!isOwner && <span className="pill gold">Ticket No. {serial}</span>}
+        </div>
       </div>
-      <TheaterPlayer playbackId={stream.mux_playback_id} title={stream.title} viewerId={session.id} tokens={tokens} />
+      <div className="with-chat">
+        <TheaterPlayer playbackId={stream.mux_playback_id} title={stream.title} viewerId={session.id} tokens={tokens} />
+        <Chat streamId={stream.id} me={me} live />
+      </div>
     </section>
   );
 }

@@ -96,3 +96,50 @@ export async function countOpenStreams(): Promise<number> {
   const rows = (await sql()`SELECT COUNT(*)::int AS n FROM streams WHERE ended_at IS NULL`) as { n: number }[];
   return rows[0]?.n ?? 0;
 }
+
+export type ChatRow = {
+  id: string;
+  discord_id: string;
+  name: string;
+  avatar: string | null;
+  kind: "msg" | "react";
+  body: string;
+  created_at: string;
+};
+
+// Newest messages after `afterId`, or the latest 50 when starting out.
+export async function chatSince(streamId: string, afterId: string | null): Promise<ChatRow[]> {
+  const rows = afterId
+    ? await sql()`
+        SELECT id::text, discord_id, name, avatar, kind, body, created_at FROM chat_messages
+        WHERE stream_id = ${streamId} AND id > ${afterId}::bigint ORDER BY id ASC LIMIT 100`
+    : await sql()`
+        SELECT * FROM (
+          SELECT id::text, discord_id, name, avatar, kind, body, created_at FROM chat_messages
+          WHERE stream_id = ${streamId} AND kind = 'msg' ORDER BY id DESC LIMIT 50
+        ) t ORDER BY id::bigint ASC`;
+  return rows as ChatRow[];
+}
+
+// Inserts unless the same user posted the same kind very recently (simple flood guard).
+export async function postChat(m: {
+  streamId: string;
+  discordId: string;
+  name: string;
+  avatar: string | null;
+  kind: "msg" | "react";
+  body: string;
+}): Promise<string | null> {
+  const gap = m.kind === "msg" ? "1 second" : "250 milliseconds";
+  const rows = (await sql()`
+    INSERT INTO chat_messages (stream_id, discord_id, name, avatar, kind, body)
+    SELECT ${m.streamId}, ${m.discordId}, ${m.name}, ${m.avatar}, ${m.kind}, ${m.body}
+    WHERE NOT EXISTS (
+      SELECT 1 FROM chat_messages
+      WHERE stream_id = ${m.streamId} AND discord_id = ${m.discordId} AND kind = ${m.kind}
+        AND created_at > now() - ${gap}::interval
+    )
+    RETURNING id::text
+  `) as { id: string }[];
+  return rows[0]?.id ?? null;
+}
