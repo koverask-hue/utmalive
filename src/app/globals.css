@@ -519,6 +519,8 @@ body.theater .screen { max-height: calc(100dvh - 190px); aspect-ratio: auto; hei
 .center-card .join-steps { justify-content: center; }
 .join-note { color: var(--dust); font-size: 0.9rem; }
 
+.spinner.big { width: 34px; height: 34px; border-width: 3px; color: var(--ion); }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {
   .create-grid, .obs { grid-template-columns: 1fr; }

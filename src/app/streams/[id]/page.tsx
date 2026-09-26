@@ -3,9 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/session";
 import { getStream, hasTicket } from "@/lib/db";
-import { stripe, fulfillCheckout } from "@/lib/stripe";
 import { euro } from "@/lib/format";
 import TicketWelcome from "@/components/TicketWelcome";
+import PaymentPending from "@/components/PaymentPending";
 import Ticket from "@/components/Ticket";
 import Avatar from "@/components/Avatar";
 import SubmitButton from "@/components/SubmitButton";
@@ -17,7 +17,7 @@ import ViewerCount from "@/components/ViewerCount";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ checkout?: string; ticket?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; ticket?: string; payerror?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const stream = await getStream((await params).id).catch(() => null);
@@ -27,21 +27,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function WatchPage({ params, searchParams }: Props) {
   const session = await requireUser();
   const { id } = await params;
-  const { checkout, ticket } = await searchParams;
+  const { paid, ticket, payerror } = await searchParams;
 
   const stream = await getStream(id);
   if (!stream) notFound();
 
-  // Back from checkout: record the ticket now instead of waiting for the webhook.
-  if (checkout) {
-    const cs = await stripe().checkout.sessions.retrieve(checkout).catch(() => null);
-    const ok = cs && cs.metadata?.discord_id === session.id && cs.metadata?.stream_id === stream.id && (await fulfillCheckout(cs));
-    redirect(`/streams/${stream.id}${ok ? "?ticket=1" : ""}`);
-  }
-
   const isOwner = stream.streamer_id === session.id;
   const free = stream.price_cents === 0;
-  const canWatch = isOwner || free || (await hasTicket(stream.id, session.id));
+  const owned = await hasTicket(stream.id, session.id);
+  const canWatch = isOwner || free || owned;
+
+  // Back from Whop checkout.
+  if (paid === "1") {
+    if (owned) redirect(`/streams/${stream.id}?ticket=1`);
+    if (!isOwner && !free) return <PaymentPending streamId={stream.id} />;
+  }
   const serial = stream.id.replace(/-/g, "").slice(0, 6).toUpperCase();
 
   if (stream.ended_at) {
@@ -57,6 +57,11 @@ export default async function WatchPage({ params, searchParams }: Props) {
   if (!canWatch) {
     return (
       <section className="buy">
+        {payerror && (
+          <p className="setup-error" role="alert">
+            Checkout couldn&apos;t open: {payerror}
+          </p>
+        )}
         <Ticket title={stream.title} streamer={stream.streamer_name} priceCents={stream.price_cents} serial={serial}>
           <form action="/api/checkout" method="post">
             <input type="hidden" name="streamId" value={stream.id} />
@@ -68,7 +73,7 @@ export default async function WatchPage({ params, searchParams }: Props) {
         <ul className="fineprint">
           <li>One payment, valid for this stream on every device you log in with.</li>
           <li>You can buy it before the stream starts. The player opens when it goes live.</li>
-          <li>Card details are handled by the payment provider, never by this site.</li>
+          <li>Payment goes through Whop. Card details never touch this site.</li>
         </ul>
       </section>
     );
