@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStreamer } from "@/lib/session";
 import { getStream, insertStream, markStreamEnded } from "@/lib/db";
-import { createLiveStream, endLiveStream } from "@/lib/mux";
+import { closeRoom } from "@/lib/live";
 
 export async function createStream(formData: FormData) {
   const session = await requireStreamer();
@@ -14,17 +14,15 @@ export async function createStream(formData: FormData) {
   if (!title || !Number.isFinite(price) || price < 0.5 || price > 500) return;
 
   let failure: string | null = null;
+  const id = crypto.randomUUID();
   try {
-  const { liveStreamId, playbackId } = await createLiveStream();
   await insertStream({
-    id: crypto.randomUUID(),
+    id,
     title,
     streamer_id: session.id,
     streamer_name: session.name,
     streamer_avatar: session.avatar,
     price_cents: Math.round(price * 100),
-    mux_live_stream_id: liveStreamId,
-    mux_playback_id: playbackId,
   });
   } catch (err) {
     console.error(err);
@@ -32,14 +30,16 @@ export async function createStream(formData: FormData) {
   }
   // Streamers see the real reason, so setup problems can be fixed without digging through logs.
   if (failure) redirect(`/studio?error=${encodeURIComponent(failure.slice(0, 300))}`);
-  revalidatePath("/studio");
+  // Straight to the broadcast page, where the streamer picks screen, camera and mic.
+  redirect(`/streams/${id}`);
 }
 
 export async function endStream(formData: FormData) {
   const session = await requireStreamer();
   const stream = await getStream(String(formData.get("id") ?? ""));
   if (!stream || stream.streamer_id !== session.id || stream.ended_at) return;
-  await endLiveStream(stream.mux_live_stream_id);
+  await closeRoom(stream.id);
   await markStreamEnded(stream.id);
   revalidatePath("/studio");
+  redirect("/studio");
 }

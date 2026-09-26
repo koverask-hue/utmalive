@@ -411,6 +411,26 @@ body.theater .with-chat { grid-template-columns: minmax(0, 1fr) 320px; }
 
 .setup-error { padding: 0.9rem 1.1rem; margin-bottom: 1.4rem; border-radius: var(--radius-m); background: rgba(255, 77, 106, 0.1); border: 1px solid rgba(255, 77, 106, 0.45); color: #ffc2cc; font: 0.9rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; text-align: left; }
 
+/* ---------- Live stage (LiveKit) ---------- */
+.screen { aspect-ratio: 16 / 9; }
+.stage-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.stage-video.contain { object-fit: contain; }
+.stage-video.mirrored { transform: scaleX(-1); }
+.pip { position: absolute; right: 14px; bottom: 14px; width: 22%; min-width: 120px; aspect-ratio: 16 / 9; border-radius: var(--radius-m); overflow: hidden; box-shadow: 0 0 0 1px var(--line-strong), 0 12px 30px rgba(0, 0, 0, 0.6); }
+.stage-overlay {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 0.6rem; padding: 1.5rem; text-align: center;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(77, 111, 224, 0.18), transparent 70%), #04060f;
+}
+.stage-overlay p { max-width: 30rem; }
+.stage-overlay .radar { width: 110px; height: 110px; margin-bottom: 0.4rem; }
+.stage-badge { position: absolute; left: 14px; top: 14px; padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(4, 6, 15, 0.7); backdrop-filter: blur(6px); }
+.unmute { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); }
+.stage-tools { align-items: center; }
+.stage-spacer { flex: 1; }
+.desk { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.desk-btn.on { --b: var(--signal); color: #fff; }
+body.theater .screen { max-height: calc(100dvh - 190px); aspect-ratio: auto; height: calc(100dvh - 190px); }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {
   .create-grid, .obs { grid-template-columns: 1fr; }

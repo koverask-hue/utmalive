@@ -1,13 +1,13 @@
 # UTMA Live
 
-Members-only live streaming. Viewers log in with Discord, buy a ticket per stream with Stripe, and watch. Users with the streamer role go live from OBS.
+Members-only live streaming. Viewers log in with Discord, buy a ticket per stream with Stripe, and watch. Users with the streamer role go live from their browser.
 
 - **Login:** Discord OAuth. Only members of your server can log in, optionally only with a "verified" role.
-- **Streamers:** anyone with `DISCORD_STREAMER_ROLE_ID`. They create a stream in `/studio`, set a price (default €2), and paste the server URL and key into OBS.
+- **Streamers:** anyone with `DISCORD_STREAMER_ROLE_ID`. They create a stream in `/studio`, set a price (default €2), and go live from the browser by sharing their screen, camera and mic.
 - **Viewers:** pay the ticket price through Stripe Checkout and the player unlocks. Tickets are per stream.
-- **Video:** [Mux](https://mux.com) Live. Vercel can't ingest or relay live video, so Mux handles it. Playback is **signed**, so a leaked playback ID won't play without a token issued to a ticket holder.
+- **Video:** [LiveKit](https://livekit.io) (WebRTC, free tier available). Vercel can't relay live video, so LiveKit does. Only this site issues LiveKit tokens, and only to ticket holders, so a shared link doesn't get anyone in.
 
-Stack: Next.js 16 (App Router), Postgres (Neon), Stripe, Mux. No auth library: the Discord OAuth flow is in `src/app/api/auth/*`.
+Stack: Next.js 16 (App Router), Postgres (Neon), Stripe, LiveKit. No auth library: the Discord OAuth flow is in `src/app/api/auth/*`.
 
 ## Setup
 
@@ -20,9 +20,9 @@ Stack: Next.js 16 (App Router), Postgres (Neon), Stripe, Mux. No auth library: t
 1. Copy the secret key from https://dashboard.stripe.com/apikeys (use `sk_test_…` until you're ready).
 2. Developers → Webhooks → Add endpoint `https://YOUR-DOMAIN/api/stripe/webhook` with events `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy the signing secret.
 
-### 3. Mux
-1. Settings → Access Tokens → new token with **Mux Video** read + write.
-2. Settings → Signing Keys → new key. Copy the key ID and the base64 private key.
+### 3. LiveKit
+1. Create a project at https://cloud.livekit.io (skip the agent setup).
+2. Settings → API Keys → create a key. Set `LIVEKIT_URL` (the `wss://…livekit.cloud` address), `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET`.
 
 ### 4. Database
 Create a Postgres database. On Vercel: Storage → Marketplace → Neon, which sets `DATABASE_URL`. Then apply the schema once:
@@ -45,6 +45,7 @@ npm run dev
 
 ## Known limits
 - Roles are read at login. If you remove someone's streamer role, it takes effect at their next login (sessions last 12 hours).
-- Playback tokens last 4 hours. A paying viewer could share the tokenized URL during that window.
+- Viewer tokens last 6 hours and are tied to the viewer's Discord account.
+- LiveKit's free plan has a monthly minutes cap. Check usage in the LiveKit dashboard.
 - Stripe fees on a €2 ticket (EEA cards: about €0.25 + 1.5%) take roughly 14%.
 - No refunds UI. Issue refunds from the Stripe dashboard. The ticket stays valid unless you delete the row in `purchases`.

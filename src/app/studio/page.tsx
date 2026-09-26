@@ -2,10 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireStreamer } from "@/lib/session";
 import { listStreamsBy, salesByStream } from "@/lib/db";
-import { MUX_RTMP_URL, liveStatus, streamKey } from "@/lib/mux";
+import { liveInfo } from "@/lib/live";
 import { euro, timeAgo } from "@/lib/format";
 import PricePicker from "@/components/PricePicker";
-import CopyField from "@/components/CopyField";
 import ConfirmEnd from "@/components/ConfirmEnd";
 import SubmitButton from "@/components/SubmitButton";
 import { createStream, endStream } from "./actions";
@@ -20,7 +19,7 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
   try {
     [streams, sales] = await Promise.all([listStreamsBy(session.id), salesByStream(session.id)]);
     details = await Promise.all(
-      streams.filter((s) => !s.ended_at).map(async (s) => ({ status: await liveStatus(s.mux_live_stream_id), key: await streamKey(s.mux_live_stream_id) })),
+      streams.filter((s) => !s.ended_at).map((s) => liveInfo(s.id, s.streamer_id)),
     );
   } catch (err) {
     console.error(err);
@@ -45,7 +44,7 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
       <div className="page-head">
         <div>
           <h1>Studio</h1>
-          <p className="muted">Create a stream, paste the key into OBS, and go live.</p>
+          <p className="muted">Create a stream, then go live from your browser with your screen, camera or both.</p>
         </div>
       </div>
 
@@ -74,7 +73,7 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
       <form action={createStream} className="panel">
         <h2>New stream</h2>
         <PricePicker defaultPrice={defaultPrice} streamer={session.name} />
-        <SubmitButton pending="Creating stream…">Create stream</SubmitButton>
+        <SubmitButton pending="Creating stream…">Create stream and open broadcast</SubmitButton>
       </form>
 
       <h2 className="section-title">Open streams</h2>
@@ -89,28 +88,17 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
                 <div>
                   <span className={`state ${live ? "live" : "soon"}`}>
                     <i aria-hidden />
-                    {live ? "Live" : "Waiting for OBS"}
+                    {live ? `Live, ${details[i].viewers} watching` : "Not live yet"}
                   </span>
                   <h3>{s.title}</h3>
                   <p className="muted">
                     {euro(s.price_cents)} per ticket. {sold?.tickets ?? 0} sold, {euro(sold?.revenue_cents ?? 0)} so far.
                   </p>
                 </div>
-                <Link href={`/streams/${s.id}`} className="btn ghost">Open watch page</Link>
+                <Link href={`/streams/${s.id}`} className={live ? "btn ghost" : "btn"}>{live ? "Open broadcast" : "Go live"}</Link>
               </header>
-              <div className="obs">
-                <ol className="obs-steps">
-                  <li>In OBS, open Settings, then Stream.</li>
-                  <li>Set Service to Custom.</li>
-                  <li>Paste the server and stream key below, then Start Streaming.</li>
-                </ol>
-                <div className="obs-fields">
-                  <CopyField label="Server" value={MUX_RTMP_URL} />
-                  <CopyField label="Stream key" value={details[i].key} secret />
-                </div>
-              </div>
               <footer className="stream-panel-foot">
-                <small className="muted">Keep the key private. Anyone with it can broadcast on this stream.</small>
+                <small className="muted">Ending closes the stream for good. To pause, use Go off air on the broadcast page.</small>
                 <ConfirmEnd id={s.id} title={s.title} action={endStream} />
               </footer>
             </article>

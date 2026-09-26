@@ -14,6 +14,7 @@ export type Stream = {
   streamer_name: string;
   streamer_avatar: string | null;
   price_cents: number;
+  // Left over from the Mux version; always '' now (the LiveKit room is the stream id).
   mux_live_stream_id: string;
   mux_playback_id: string;
   ended_at: string | null;
@@ -40,10 +41,10 @@ export async function getStream(id: string): Promise<Stream | null> {
   return rows[0] ?? null;
 }
 
-export async function insertStream(s: Omit<Stream, "ended_at" | "created_at">) {
+export async function insertStream(s: Omit<Stream, "ended_at" | "created_at" | "mux_live_stream_id" | "mux_playback_id">) {
   await sql()`
     INSERT INTO streams (id, title, streamer_id, streamer_name, streamer_avatar, price_cents, mux_live_stream_id, mux_playback_id)
-    VALUES (${s.id}, ${s.title}, ${s.streamer_id}, ${s.streamer_name}, ${s.streamer_avatar}, ${s.price_cents}, ${s.mux_live_stream_id}, ${s.mux_playback_id})
+    VALUES (${s.id}, ${s.title}, ${s.streamer_id}, ${s.streamer_name}, ${s.streamer_avatar}, ${s.price_cents}, '', '')
   `;
 }
 

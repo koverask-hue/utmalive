@@ -3,17 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/session";
 import { getStream, hasTicket } from "@/lib/db";
-import { liveInfo, playbackTokens } from "@/lib/mux";
 import { stripe, fulfillCheckout } from "@/lib/stripe";
 import { euro } from "@/lib/format";
-import TheaterPlayer from "@/components/TheaterPlayer";
-import WaitingRoom from "@/components/WaitingRoom";
 import TicketWelcome from "@/components/TicketWelcome";
-import LiveTimer from "@/components/LiveTimer";
 import Ticket from "@/components/Ticket";
 import Avatar from "@/components/Avatar";
 import SubmitButton from "@/components/SubmitButton";
 import Chat from "@/components/Chat";
+import LiveStage from "@/components/LiveStage";
+import ConfirmEnd from "@/components/ConfirmEnd";
+import { endStream } from "@/app/studio/actions";
 import ViewerCount from "@/components/ViewerCount";
 
 export const dynamic = "force-dynamic";
@@ -74,35 +73,9 @@ export default async function WatchPage({ params, searchParams }: Props) {
     );
   }
 
-  const info = await liveInfo(stream.mux_live_stream_id);
   const welcome = ticket === "1" && <TicketWelcome streamId={stream.id} />;
   const me = { name: session.name, avatar: session.avatar };
 
-  if (info.status !== "active") {
-    return (
-      <section className="with-chat">
-        {welcome}
-        <div>
-        <WaitingRoom
-          title={stream.title}
-          message={
-            isOwner
-              ? "Start streaming in OBS with the key from your Studio. Viewers see the player as soon as the signal arrives."
-              : `You have a ticket. ${stream.streamer_name} hasn't started yet.`
-          }
-        />
-        {isOwner && (
-          <p className="center">
-            <Link href="/studio" className="btn ghost">Open Studio</Link>
-          </p>
-        )}
-        </div>
-        <Chat streamId={stream.id} me={me} live={false} />
-      </section>
-    );
-  }
-
-  const tokens = await playbackTokens(stream.mux_playback_id);
   return (
     <section className="watch">
       {welcome}
@@ -112,18 +85,22 @@ export default async function WatchPage({ params, searchParams }: Props) {
           <p className="row-by">
             <Avatar src={stream.streamer_avatar} name={stream.streamer_name} size={24} />
             {stream.streamer_name}
-            <span className="onair-signal inline">
-              <i aria-hidden /> Live {info.startedAt && <LiveTimer since={info.startedAt} />}
-            </span>
           </p>
         </div>
         <div className="watch-meta">
           <ViewerCount streamId={stream.id} />
-          {!isOwner && <span className="pill gold">Ticket No. {serial}</span>}
+          {isOwner ? (
+            <>
+              <span className="pill">Your stream</span>
+              <ConfirmEnd id={stream.id} title={stream.title} action={endStream} />
+            </>
+          ) : (
+            <span className="pill gold">Ticket No. {serial}</span>
+          )}
         </div>
       </div>
       <div className="with-chat">
-        <TheaterPlayer playbackId={stream.mux_playback_id} title={stream.title} viewerId={session.id} tokens={tokens} />
+        <LiveStage streamId={stream.id} title={stream.title} streamerId={stream.streamer_id} streamerName={stream.streamer_name} broadcaster={isOwner} />
         <Chat streamId={stream.id} me={me} live />
       </div>
     </section>

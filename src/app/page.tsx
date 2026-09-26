@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { countOpenStreams, listStreams, ticketStreamIds } from "@/lib/db";
-import { liveStatus, type LiveStatus } from "@/lib/mux";
+import { liveInfo, type LiveStatus } from "@/lib/live";
 import { euro, timeAgo } from "@/lib/format";
 import StreamBrowser, { type StreamItem } from "@/components/StreamBrowser";
 import Avatar from "@/components/Avatar";
@@ -16,7 +16,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
 
   const [streams, owned] = await Promise.all([listStreams(), ticketStreamIds(session.id)]);
   const statuses = await Promise.all(
-    streams.map((s) => (s.ended_at ? Promise.resolve<LiveStatus>("disabled") : liveStatus(s.mux_live_stream_id))),
+    streams.map((s) => (s.ended_at ? Promise.resolve<LiveStatus>("idle") : liveInfo(s.id, s.streamer_id).then((i) => i.status))),
   );
 
   const items: StreamItem[] = streams.map((s, i) => {
