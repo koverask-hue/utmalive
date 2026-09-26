@@ -1,76 +1,127 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { requireStreamer } from "@/lib/session";
-import { listStreamsBy } from "@/lib/db";
+import { listStreamsBy, salesByStream } from "@/lib/db";
 import { MUX_RTMP_URL, liveStatus, streamKey } from "@/lib/mux";
-import { euro } from "@/lib/format";
+import { euro, timeAgo } from "@/lib/format";
+import PricePicker from "@/components/PricePicker";
+import CopyField from "@/components/CopyField";
+import ConfirmEnd from "@/components/ConfirmEnd";
+import SubmitButton from "@/components/SubmitButton";
 import { createStream, endStream } from "./actions";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Studio" };
 
 export default async function Studio() {
   const session = await requireStreamer();
-  const streams = await listStreamsBy(session.id);
-  const active = streams.filter((s) => !s.ended_at);
+  const [streams, sales] = await Promise.all([listStreamsBy(session.id), salesByStream(session.id)]);
+  const open = streams.filter((s) => !s.ended_at);
+  const past = streams.filter((s) => s.ended_at);
   const details = await Promise.all(
-    active.map(async (s) => ({
-      status: await liveStatus(s.mux_live_stream_id),
-      key: await streamKey(s.mux_live_stream_id),
-    })),
+    open.map(async (s) => ({ status: await liveStatus(s.mux_live_stream_id), key: await streamKey(s.mux_live_stream_id) })),
   );
-  const defaultPrice = (Number(process.env.DEFAULT_PRICE_CENTS ?? 200) / 100).toFixed(2);
+  const totals = [...sales.values()].reduce((a, s) => ({ t: a.t + s.tickets, r: a.r + s.revenue_cents }), { t: 0, r: 0 });
+  const liveNow = details.filter((d) => d.status === "active").length;
+  const defaultPrice = Number(process.env.DEFAULT_PRICE_CENTS ?? 200) / 100;
 
   return (
-    <section>
-      <h1>Studio</h1>
+    <section className="studio">
+      <div className="page-head">
+        <div>
+          <h1>Studio</h1>
+          <p className="muted">Create a stream, paste the key into OBS, and go live.</p>
+        </div>
+      </div>
 
-      <form action={createStream} className="card form">
+      <dl className="stats">
+        <div>
+          <dt>Tickets sold</dt>
+          <dd className="tabular">{totals.t}</dd>
+        </div>
+        <div>
+          <dt>Ticket revenue</dt>
+          <dd className="tabular gold-text">{euro(totals.r)}</dd>
+          <small>Before payment fees</small>
+        </div>
+        <div>
+          <dt>Live now</dt>
+          <dd className="tabular">{liveNow}</dd>
+        </div>
+      </dl>
+
+      <form action={createStream} className="panel">
         <h2>New stream</h2>
-        <label>
-          Title
-          <input name="title" required maxLength={120} placeholder="Friday night session" />
-        </label>
-        <label>
-          Ticket price (€)
-          <input name="price" type="number" step="0.01" min="0.50" max="500" defaultValue={defaultPrice} required />
-        </label>
-        <button className="btn">Create stream</button>
+        <PricePicker defaultPrice={defaultPrice} streamer={session.name} />
+        <SubmitButton pending="Creating stream…">Create stream</SubmitButton>
       </form>
 
-      <h2>Your open streams</h2>
-      {active.length === 0 && <p className="muted">None yet.</p>}
-      <ul className="stack">
-        {active.map((s, i) => (
-          <li key={s.id} className="card">
-            <div className="row">
-              <h2>{s.title}</h2>
-              <span className={`badge ${details[i].status === "active" ? "live" : ""}`}>
-                {details[i].status === "active" ? "Live" : "Waiting for OBS"}
-              </span>
-            </div>
-            <p className="muted">
-              {euro(s.price_cents)} per ticket · <Link href={`/streams/${s.id}`}>Open watch page</Link>
-            </p>
-            <details>
-              <summary>OBS settings (keep the key secret)</summary>
-              <p>
-                Settings → Stream → Service: <em>Custom</em>
-              </p>
-              <label>
-                Server
-                <input readOnly value={MUX_RTMP_URL} />
-              </label>
-              <label>
-                Stream key
-                <input readOnly value={details[i].key} />
-              </label>
-            </details>
-            <form action={endStream}>
-              <input type="hidden" name="id" value={s.id} />
-              <button className="btn danger">End stream</button>
-            </form>
-          </li>
-        ))}
-      </ul>
+      <h2 className="section-title">Open streams</h2>
+      {open.length === 0 && <p className="empty">No open streams. Create one above to get your OBS key.</p>}
+      <div className="stack">
+        {open.map((s, i) => {
+          const live = details[i].status === "active";
+          const sold = sales.get(s.id);
+          return (
+            <article key={s.id} className={`panel stream-panel ${live ? "is-live" : ""}`}>
+              <header className="stream-panel-head">
+                <div>
+                  <span className={`state ${live ? "live" : "soon"}`}>
+                    <i aria-hidden />
+                    {live ? "Live" : "Waiting for OBS"}
+                  </span>
+                  <h3>{s.title}</h3>
+                  <p className="muted">
+                    {euro(s.price_cents)} per ticket. {sold?.tickets ?? 0} sold, {euro(sold?.revenue_cents ?? 0)} so far.
+                  </p>
+                </div>
+                <Link href={`/streams/${s.id}`} className="btn ghost">Open watch page</Link>
+              </header>
+              <div className="obs">
+                <ol className="obs-steps">
+                  <li>In OBS, open Settings, then Stream.</li>
+                  <li>Set Service to Custom.</li>
+                  <li>Paste the server and stream key below, then Start Streaming.</li>
+                </ol>
+                <div className="obs-fields">
+                  <CopyField label="Server" value={MUX_RTMP_URL} />
+                  <CopyField label="Stream key" value={details[i].key} secret />
+                </div>
+              </div>
+              <footer className="stream-panel-foot">
+                <small className="muted">Keep the key private. Anyone with it can broadcast on this stream.</small>
+                <ConfirmEnd id={s.id} title={s.title} action={endStream} />
+              </footer>
+            </article>
+          );
+        })}
+      </div>
+
+      {past.length > 0 && (
+        <>
+          <h2 className="section-title">Past streams</h2>
+          <table className="history">
+            <thead>
+              <tr>
+                <th>Stream</th>
+                <th>Ended</th>
+                <th className="num">Tickets</th>
+                <th className="num">Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {past.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.title}</td>
+                  <td className="muted">{timeAgo(s.ended_at!)}</td>
+                  <td className="num tabular">{sales.get(s.id)?.tickets ?? 0}</td>
+                  <td className="num tabular">{euro(sales.get(s.id)?.revenue_cents ?? 0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
     </section>
   );
 }

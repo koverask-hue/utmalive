@@ -15,7 +15,7 @@ export default function Player(props: {
       tokens={props.tokens}
       streamType="live"
       autoPlay
-      accentColor="#5865f2"
+      accentColor="#7aa2ff"
       metadata={{ video_title: props.title, viewer_user_id: props.viewerId }}
     />
   );

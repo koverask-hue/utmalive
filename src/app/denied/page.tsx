@@ -1,12 +1,17 @@
+import { DiscordIcon } from "@/components/icons";
+
+export const metadata = { title: "Members only" };
+
 export default function Denied() {
   return (
-    <section className="hero">
-      <h1>Access denied</h1>
+    <section className="center-card">
+      <h1>Members only</h1>
       <p className="muted">
-        This site is only for verified members of our Discord server. Join the server and get verified, then log in again.
+        Your Discord account isn&apos;t in the UTMA server, or it doesn&apos;t have the verified role yet. Join the server,
+        get verified, then log in again.
       </p>
       <a className="btn discord" href="/api/auth/login">
-        Try again
+        <DiscordIcon /> Log in again
       </a>
     </section>
   );

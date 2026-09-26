@@ -37,6 +37,21 @@ export async function liveStatus(liveStreamId: string): Promise<LiveStatus> {
   }
 }
 
+// Status plus when the current broadcast began (the recording asset starts with it).
+export async function liveInfo(liveStreamId: string): Promise<{ status: LiveStatus; startedAt: number | null }> {
+  try {
+    const live = await mux().video.liveStreams.retrieve(liveStreamId);
+    let startedAt: number | null = null;
+    if (live.status === "active" && live.active_asset_id) {
+      const asset = await mux().video.assets.retrieve(live.active_asset_id).catch(() => null);
+      if (asset?.created_at) startedAt = Number(asset.created_at) * 1000;
+    }
+    return { status: live.status, startedAt };
+  } catch {
+    return { status: "unknown", startedAt: null };
+  }
+}
+
 export async function streamKey(liveStreamId: string): Promise<string> {
   return (await mux().video.liveStreams.retrieve(liveStreamId)).stream_key ?? "";
 }

@@ -1,64 +1,123 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
-import { listStreams, type Stream } from "@/lib/db";
+import { countOpenStreams, listStreams, ticketStreamIds } from "@/lib/db";
 import { liveStatus, type LiveStatus } from "@/lib/mux";
-import { euro } from "@/lib/format";
+import { euro, timeAgo } from "@/lib/format";
+import StreamBrowser, { type StreamItem } from "@/components/StreamBrowser";
+import Avatar from "@/components/Avatar";
+import { DiscordIcon, PlusIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const session = await getSession();
   const { error } = await searchParams;
+  if (!session) return <Landing error={!!error} />;
 
-  if (!session) {
-    return (
-      <section className="hero">
-        <h1>Members-only live streams</h1>
-        <p className="muted">Log in with the Discord account you use in our server to see what&apos;s on.</p>
-        {error && <p className="error">Login failed. Please try again.</p>}
-        <a className="btn discord" href="/api/auth/login">
-          Log in with Discord
-        </a>
-      </section>
-    );
-  }
-
-  const streams = await listStreams();
+  const [streams, owned] = await Promise.all([listStreams(), ticketStreamIds(session.id)]);
   const statuses = await Promise.all(
     streams.map((s) => (s.ended_at ? Promise.resolve<LiveStatus>("disabled") : liveStatus(s.mux_live_stream_id))),
   );
 
+  const items: StreamItem[] = streams.map((s, i) => {
+    const state = s.ended_at ? "ended" : statuses[i] === "active" ? "live" : "soon";
+    return {
+      id: s.id,
+      title: s.title,
+      streamer: s.streamer_name,
+      avatar: s.streamer_avatar,
+      priceCents: s.price_cents,
+      state,
+      when: state === "ended" ? `ended ${timeAgo(s.ended_at!)}` : `created ${timeAgo(s.created_at)}`,
+      hasTicket: owned.has(s.id),
+      isMine: s.streamer_id === session.id,
+    };
+  });
+  const live = items.filter((i) => i.state === "live");
+
   return (
-    <section>
-      <h1>Streams</h1>
-      {streams.length === 0 ? (
-        <p className="muted">Nothing scheduled yet.{session.isStreamer && <> Start one in the <Link href="/studio">Studio</Link>.</>}</p>
-      ) : (
-        <ul className="grid">
-          {streams.map((s, i) => (
-            <StreamCard key={s.id} stream={s} status={statuses[i]} />
+    <section className="home">
+      <div className="page-head">
+        <div>
+          <h1>Streams</h1>
+          <p className="muted">
+            {live.length ? `${live.length} on air right now.` : "Nobody is live right now. Streams show up here the moment they start."}
+          </p>
+        </div>
+        {session.isStreamer && (
+          <Link href="/studio" className="btn">
+            <PlusIcon /> New stream
+          </Link>
+        )}
+      </div>
+
+      {live.length > 0 && (
+        <div className="onair">
+          {live.slice(0, 2).map((s) => (
+            <Link key={s.id} href={`/streams/${s.id}`} className="onair-card">
+              <span className="onair-signal">
+                <i aria-hidden /> On air
+              </span>
+              <span className="onair-title">{s.title}</span>
+              <span className="onair-foot">
+                <span className="row-by">
+                  <Avatar src={s.avatar} name={s.streamer} size={24} />
+                  {s.streamer}
+                </span>
+                <span className="btn small">{s.hasTicket || s.isMine ? "Watch now" : `Get ticket, ${euro(s.priceCents)}`}</span>
+              </span>
+            </Link>
           ))}
-        </ul>
+        </div>
+      )}
+
+      {items.length === 0 ? (
+        <div className="empty-state">
+          <p>No streams yet.</p>
+          {session.isStreamer ? (
+            <Link href="/studio" className="btn">Start the first one</Link>
+          ) : (
+            <p className="muted">When a streamer goes live, it appears here.</p>
+          )}
+        </div>
+      ) : (
+        <StreamBrowser items={items} />
       )}
     </section>
   );
 }
 
-function StreamCard({ stream, status }: { stream: Stream; status: LiveStatus }) {
-  const badge = stream.ended_at ? "Ended" : status === "active" ? "Live" : "Starting soon";
+async function Landing({ error }: { error: boolean }) {
+  const open = await countOpenStreams().catch(() => 0);
   return (
-    <li className="card">
-      <span className={`badge ${badge === "Live" ? "live" : ""}`}>{badge}</span>
-      <h2>{stream.title}</h2>
-      <p className="muted">by {stream.streamer_name}</p>
-      <div className="row">
-        <strong>{euro(stream.price_cents)}</strong>
-        {!stream.ended_at && (
-          <Link className="btn" href={`/streams/${stream.id}`}>
-            Watch
-          </Link>
+    <section className="landing">
+      <div className="landing-copy">
+        {open > 0 && (
+          <span className="onair-signal">
+            <i aria-hidden /> {open === 1 ? "1 stream open now" : `${open} streams open now`}
+          </span>
         )}
+        <h1 className="display">Live from the server.</h1>
+        <p className="lede">Streams for members of the UTMA Discord. Log in with the account you use there, grab a ticket, and watch.</p>
+        {error && <p className="error" role="alert">Discord login didn&apos;t finish. Try again, and approve the request on Discord&apos;s page.</p>}
+        <a className="btn discord big" href="/api/auth/login">
+          <DiscordIcon /> Log in with Discord
+        </a>
       </div>
-    </li>
+      <ol className="steps">
+        <li>
+          <strong>Log in with Discord</strong>
+          <span>We check that you&apos;re in the server. Nothing is posted and we never see your password.</span>
+        </li>
+        <li>
+          <strong>Get a ticket</strong>
+          <span>Each stream has its own price, usually €2. Pay once and it&apos;s yours on any device.</span>
+        </li>
+        <li>
+          <strong>Watch live</strong>
+          <span>The player opens as soon as the streamer goes live.</span>
+        </li>
+      </ol>
+    </section>
   );
 }

@@ -18,6 +18,7 @@ export async function createStream(formData: FormData) {
     title,
     streamer_id: session.id,
     streamer_name: session.name,
+    streamer_avatar: session.avatar,
     price_cents: Math.round(price * 100),
     mux_live_stream_id: liveStreamId,
     mux_playback_id: playbackId,
