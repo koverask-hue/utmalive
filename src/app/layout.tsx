@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import Starfield from "@/components/Starfield";
 import NavLinks from "@/components/NavLinks";
 import Avatar from "@/components/Avatar";
+import Logo from "@/components/Logo";
 import { ToastProvider } from "@/components/Toast";
 import { LogoutIcon } from "@/components/icons";
 import "./globals.css";
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   description: "Live streams for members of the 8live Discord server.",
 };
 
-export const viewport: Viewport = { themeColor: "#060816", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#07080D", colorScheme: "dark" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -29,8 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <a href="#main" className="skip">Skip to content</a>
           <header className="topbar">
             <Link href="/" className="brand" aria-label="8live home">
-              <span className="brand-mark" aria-hidden />
-              8<span className="brand-live">live</span>
+              <Logo />
             </Link>
             {session && (
               <nav className="nav" aria-label="Main">
