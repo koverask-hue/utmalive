@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { exchangeCode, fetchIdentity } from "@/lib/discord";
+import { ensureViewerRole, exchangeCode, fetchIdentity } from "@/lib/discord";
 import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 import { appUrl } from "@/lib/env";
 
@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const identity = await fetchIdentity(await exchangeCode(code));
+    const accessToken = await exchangeCode(code);
+    let identity = await fetchIdentity(accessToken);
+    if (await ensureViewerRole(accessToken, identity.id)) identity = await fetchIdentity(accessToken);
     if (!identity.isMember) {
       const res = NextResponse.redirect(`${appUrl()}/denied`);
       res.cookies.delete(STATE_COOKIE);

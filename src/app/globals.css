@@ -515,6 +515,10 @@ body.theater .screen { max-height: calc(100dvh - 190px); aspect-ratio: auto; hei
   .vc-volume { width: 70px; }
 }
 
+.join-steps { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: inherit; }
+.center-card .join-steps { justify-content: center; }
+.join-note { color: var(--dust); font-size: 0.9rem; }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {
   .create-grid, .obs { grid-template-columns: 1fr; }

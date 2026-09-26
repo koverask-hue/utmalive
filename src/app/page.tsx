@@ -89,6 +89,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
 
 async function Landing({ error }: { error: boolean }) {
   const open = await countOpenStreams().catch(() => 0);
+  const invite = process.env.DISCORD_INVITE_URL;
   return (
     <section className="landing">
       <div className="landing-copy">
@@ -100,9 +101,17 @@ async function Landing({ error }: { error: boolean }) {
         <h1 className="display">Live from the server.</h1>
         <p className="lede">Streams for members of the UTMA Discord. Log in with the account you use there, grab a ticket, and watch.</p>
         {error && <p className="error" role="alert">Discord login didn&apos;t finish. Try again, and approve the request on Discord&apos;s page.</p>}
-        <a className="btn discord big" href="/api/auth/login">
-          <DiscordIcon /> Log in with Discord
-        </a>
+        <div className="join-steps">
+          {invite && (
+            <a className="btn ghost big" href={invite} target="_blank" rel="noopener noreferrer">
+              <DiscordIcon /> Join the Discord server
+            </a>
+          )}
+          <a className="btn discord big" href="/api/auth/login">
+            <DiscordIcon /> Log in with Discord
+          </a>
+        </div>
+        {invite && <p className="join-note">New here? Join the server first, then log in with the same account.</p>}
       </div>
       <ol className="steps">
         <li>

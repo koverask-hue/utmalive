@@ -11,8 +11,9 @@ export function authorizeUrl(state: string) {
     client_id: env("DISCORD_CLIENT_ID"),
     response_type: "code",
     redirect_uri: redirectUri(),
-    // guilds.members.read lets us read the user's roles in our server.
-    scope: "identify guilds.members.read",
+    // guilds.members.read reads the user's roles in our server; guilds.join lets
+    // the bot add them to the server if they aren't in it yet.
+    scope: optionalEnv("DISCORD_BOT_TOKEN") ? "identify guilds.members.read guilds.join" : "identify guilds.members.read",
     state,
     prompt: "none",
   });
@@ -70,4 +71,31 @@ export async function fetchIdentity(accessToken: string): Promise<DiscordIdentit
     isMember,
     isStreamer,
   };
+}
+
+// Puts the user in the server with the viewer role (e.g. "Žiūrovai"). Needs a bot
+// in the server with Manage Roles and Create Invite, ranked above that role.
+// Returns true when anything changed, so the caller re-reads the membership.
+export async function ensureViewerRole(accessToken: string, userId: string): Promise<boolean> {
+  const bot = optionalEnv("DISCORD_BOT_TOKEN");
+  const role = optionalEnv("DISCORD_VIEWER_ROLE_ID");
+  if (!bot || !role) return false;
+  const guild = env("DISCORD_GUILD_ID");
+  const headers = { Authorization: `Bot ${bot}`, "Content-Type": "application/json" };
+
+  // Adds them if they're not in the server (201); 204 means they already were.
+  const join = await fetch(`${API}/guilds/${guild}/members/${userId}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ access_token: accessToken, roles: [role] }),
+  });
+  if (join.status === 201) return true;
+  if (join.status !== 204) {
+    console.error("Discord auto-join failed", join.status, await join.text());
+    return false;
+  }
+  // Already a member: make sure they have the role.
+  const add = await fetch(`${API}/guilds/${guild}/members/${userId}/roles/${role}`, { method: "PUT", headers });
+  if (!add.ok) console.error("Discord role add failed", add.status, await add.text());
+  return add.ok;
 }

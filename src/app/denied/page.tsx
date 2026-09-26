@@ -10,9 +10,16 @@ export default function Denied() {
         Your Discord account isn&apos;t in the UTMA server, or it doesn&apos;t have the verified role yet. Join the server,
         get verified, then log in again.
       </p>
-      <a className="btn discord" href="/api/auth/login">
-        <DiscordIcon /> Log in again
-      </a>
+      <div className="join-steps">
+        {process.env.DISCORD_INVITE_URL && (
+          <a className="btn ghost" href={process.env.DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer">
+            <DiscordIcon /> Join the server
+          </a>
+        )}
+        <a className="btn discord" href="/api/auth/login">
+          <DiscordIcon /> Log in again
+        </a>
+      </div>
     </section>
   );
 }
