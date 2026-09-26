@@ -19,5 +19,9 @@ export function optionalEnv(name: string): string | undefined {
 }
 
 export function appUrl(): string {
-  return (optionalEnv("APP_URL") ?? "http://localhost:3000").replace(/\/$/, "");
+  const explicit = optionalEnv("APP_URL");
+  if (explicit) return explicit.replace(/\/$/, "");
+  // Set automatically by Vercel, so production works even without APP_URL.
+  const vercel = optionalEnv("VERCEL_PROJECT_PRODUCTION_URL");
+  return vercel ? `https://${vercel}` : "http://localhost:3000";
 }
