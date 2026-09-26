@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
-import { listStreams, ticketStreamIds } from "@/lib/db";
+import { countOpenStreams, listStreams, ticketStreamIds } from "@/lib/db";
 import { liveInfo, type LiveStatus } from "@/lib/live";
 import { euro, timeAgo } from "@/lib/format";
 import StreamBrowser, { type StreamItem } from "@/components/StreamBrowser";
 import Avatar from "@/components/Avatar";
-import { PlusIcon } from "@/components/icons";
-import Poster, { type PosterStream } from "@/components/Poster";
+import { DiscordIcon, PlusIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +51,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         )}
       </div>
 
+      {live.length > 0 && (
+        <div className="onair">
+          {live.slice(0, 2).map((s) => (
+            <Link key={s.id} href={`/streams/${s.id}`} className="onair-card">
+              <span className="onair-signal">
+                <i aria-hidden /> On air
+              </span>
+              <span className="onair-title">{s.title}</span>
+              <span className="onair-foot">
+                <span className="row-by">
+                  <Avatar src={s.avatar} name={s.streamer} size={24} />
+                  {s.streamer}
+                </span>
+                <span className="btn small">{s.hasTicket || s.isMine || s.priceCents === 0 ? "Watch now" : `Get ticket, ${euro(s.priceCents)}`}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+
       {items.length === 0 ? (
         <div className="empty-state">
           <p>No streams yet.</p>
@@ -69,17 +88,45 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
 }
 
 async function Landing({ error }: { error: boolean }) {
-  const open = (await listStreams().catch(() => [])).filter((s) => !s.ended_at);
-  const live = await Promise.all(open.map((s) => liveInfo(s.id, s.streamer_id).then((i) => i.status === "active").catch(() => false)));
-  const items: PosterStream[] = open.map((s, i) => ({
-    id: s.id,
-    title: s.title,
-    streamer: s.streamer_name,
-    avatar: s.streamer_avatar,
-    priceCents: s.price_cents,
-    live: live[i],
-  }));
-  // Live streams first, then the newest; the list is already newest first.
-  items.sort((a, b) => Number(b.live) - Number(a.live));
-  return <Poster featured={items[0] ?? null} invite={process.env.DISCORD_INVITE_URL} error={error} />;
+  const open = await countOpenStreams().catch(() => 0);
+  const invite = process.env.DISCORD_INVITE_URL;
+  return (
+    <section className="landing">
+      <div className="landing-copy">
+        {open > 0 && (
+          <span className="onair-signal">
+            <i aria-hidden /> {open === 1 ? "1 stream open now" : `${open} streams open now`}
+          </span>
+        )}
+        <h1 className="display">Live from the server.</h1>
+        <p className="lede">Streams for members of the 8live Discord. Log in with the account you use there, grab a ticket, and watch.</p>
+        {error && <p className="error" role="alert">Discord login didn&apos;t finish. Try again, and approve the request on Discord&apos;s page.</p>}
+        <div className="join-steps">
+          {invite && (
+            <a className="btn ghost big" href={invite} target="_blank" rel="noopener noreferrer">
+              <DiscordIcon /> Join the Discord server
+            </a>
+          )}
+          <a className="btn discord big" href="/api/auth/login">
+            <DiscordIcon /> Log in with Discord
+          </a>
+        </div>
+        {invite && <p className="join-note">New here? Join the server first, then log in with the same account.</p>}
+      </div>
+      <ol className="steps">
+        <li>
+          <strong>Log in with Discord</strong>
+          <span>We check that you&apos;re in the server. Nothing is posted and we never see your password.</span>
+        </li>
+        <li>
+          <strong>Get a ticket</strong>
+          <span>Each stream has its own price, usually €2. Pay once and it&apos;s yours on any device.</span>
+        </li>
+        <li>
+          <strong>Watch live</strong>
+          <span>The player opens as soon as the streamer goes live.</span>
+        </li>
+      </ol>
+    </section>
+  );
 }
