@@ -409,6 +409,8 @@ body.theater .with-chat { grid-template-columns: minmax(0, 1fr) 320px; }
   .stage-tools .btn[aria-pressed] { display: none; }
 }
 
+.setup-error { padding: 0.9rem 1.1rem; margin-bottom: 1.4rem; border-radius: var(--radius-m); background: rgba(255, 77, 106, 0.1); border: 1px solid rgba(255, 77, 106, 0.45); color: #ffc2cc; font: 0.9rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; text-align: left; }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 760px) {
   .create-grid, .obs { grid-template-columns: 1fr; }

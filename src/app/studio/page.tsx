@@ -13,14 +13,27 @@ import { createStream, endStream } from "./actions";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Studio" };
 
-export default async function Studio() {
+export default async function Studio({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const session = await requireStreamer();
-  const [streams, sales] = await Promise.all([listStreamsBy(session.id), salesByStream(session.id)]);
+  const { error } = await searchParams;
+  let streams, sales, details;
+  try {
+    [streams, sales] = await Promise.all([listStreamsBy(session.id), salesByStream(session.id)]);
+    details = await Promise.all(
+      streams.filter((s) => !s.ended_at).map(async (s) => ({ status: await liveStatus(s.mux_live_stream_id), key: await streamKey(s.mux_live_stream_id) })),
+    );
+  } catch (err) {
+    console.error(err);
+    return (
+      <section className="center-card">
+        <h1>Studio can&apos;t load</h1>
+        <p className="setup-error">{err instanceof Error ? err.message : String(err)}</p>
+        <p className="muted">Send this message to whoever set up the site.</p>
+      </section>
+    );
+  }
   const open = streams.filter((s) => !s.ended_at);
   const past = streams.filter((s) => s.ended_at);
-  const details = await Promise.all(
-    open.map(async (s) => ({ status: await liveStatus(s.mux_live_stream_id), key: await streamKey(s.mux_live_stream_id) })),
-  );
   const totals = [...sales.values()].reduce((a, s) => ({ t: a.t + s.tickets, r: a.r + s.revenue_cents }), { t: 0, r: 0 });
   const liveNow = details.filter((d) => d.status === "active").length;
   const defaultPrice = Number(process.env.DEFAULT_PRICE_CENTS ?? 200) / 100;
@@ -33,6 +46,12 @@ export default async function Studio() {
           <p className="muted">Create a stream, paste the key into OBS, and go live.</p>
         </div>
       </div>
+
+      {error && (
+        <p className="setup-error" role="alert">
+          Couldn&apos;t create the stream: {error}
+        </p>
+      )}
 
       <dl className="stats">
         <div>
