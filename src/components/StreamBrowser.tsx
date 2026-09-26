@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import Avatar from "./Avatar";
 import { SearchIcon } from "./icons";
-import { euro } from "@/lib/format";
+import { price } from "@/lib/format";
 
 export type StreamItem = {
   id: string;
@@ -100,7 +100,7 @@ function Row({ s }: { s: StreamItem }) {
         ) : s.hasTicket ? (
           <span className="pill gold">Ticket</span>
         ) : (
-          <span className="price">{euro(s.priceCents)}</span>
+          <span className="price">{price(s.priceCents)}</span>
         )}
       </span>
     </>

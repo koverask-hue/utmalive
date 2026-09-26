@@ -64,7 +64,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
                   <Avatar src={s.avatar} name={s.streamer} size={24} />
                   {s.streamer}
                 </span>
-                <span className="btn small">{s.hasTicket || s.isMine ? "Watch now" : `Get ticket, ${euro(s.priceCents)}`}</span>
+                <span className="btn small">{s.hasTicket || s.isMine || s.priceCents === 0 ? "Watch now" : `Get ticket, ${euro(s.priceCents)}`}</span>
               </span>
             </Link>
           ))}

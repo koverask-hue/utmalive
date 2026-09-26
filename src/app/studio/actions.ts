@@ -10,8 +10,8 @@ export async function createStream(formData: FormData) {
   const session = await requireStreamer();
   const title = String(formData.get("title") ?? "").trim().slice(0, 120);
   const price = Number(String(formData.get("price") ?? "").replace(",", "."));
-  // Stripe's minimum charge for EUR is €0.50.
-  if (!title || !Number.isFinite(price) || price < 0.5 || price > 500) return;
+  // 0 = free. Otherwise at least €0.50, the lowest EUR card charge.
+  if (!title || !Number.isFinite(price) || price < 0 || (price > 0 && price < 0.5) || price > 500) return;
 
   let failure: string | null = null;
   const id = crypto.randomUUID();

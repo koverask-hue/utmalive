@@ -92,7 +92,7 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
                   </span>
                   <h3>{s.title}</h3>
                   <p className="muted">
-                    {euro(s.price_cents)} per ticket. {sold?.tickets ?? 0} sold, {euro(sold?.revenue_cents ?? 0)} so far.
+                    {s.price_cents === 0 ? "Free for all members." : `${euro(s.price_cents)} per ticket. ${sold?.tickets ?? 0} sold, ${euro(sold?.revenue_cents ?? 0)} so far.`}
                   </p>
                 </div>
                 <Link href={`/streams/${s.id}`} className={live ? "btn ghost" : "btn"}>{live ? "Open broadcast" : "Go live"}</Link>

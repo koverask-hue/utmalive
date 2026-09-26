@@ -40,7 +40,8 @@ export default async function WatchPage({ params, searchParams }: Props) {
   }
 
   const isOwner = stream.streamer_id === session.id;
-  const canWatch = isOwner || (await hasTicket(stream.id, session.id));
+  const free = stream.price_cents === 0;
+  const canWatch = isOwner || free || (await hasTicket(stream.id, session.id));
   const serial = stream.id.replace(/-/g, "").slice(0, 6).toUpperCase();
 
   if (stream.ended_at) {
@@ -94,6 +95,8 @@ export default async function WatchPage({ params, searchParams }: Props) {
               <span className="pill">Your stream</span>
               <ConfirmEnd id={stream.id} title={stream.title} action={endStream} />
             </>
+          ) : free ? (
+            <span className="pill">Free stream</span>
           ) : (
             <span className="pill gold">Ticket No. {serial}</span>
           )}

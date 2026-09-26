@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS streams (
   streamer_id         TEXT NOT NULL,          -- Discord user id
   streamer_name       TEXT NOT NULL,
   streamer_avatar     TEXT,
-  price_cents         INTEGER NOT NULL CHECK (price_cents >= 50),
+  price_cents         INTEGER NOT NULL CHECK (price_cents = 0 OR price_cents >= 50),  -- 0 = free
   mux_live_stream_id  TEXT NOT NULL,
   mux_playback_id     TEXT NOT NULL,
   ended_at            TIMESTAMPTZ,
@@ -39,3 +39,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 
 CREATE INDEX IF NOT EXISTS chat_stream_id ON chat_messages (stream_id, id);
+
+-- Allow free streams (price 0) on databases created with the old ">= 50" rule.
+ALTER TABLE streams DROP CONSTRAINT IF EXISTS streams_price_cents_check;
+ALTER TABLE streams ADD CONSTRAINT streams_price_cents_check CHECK (price_cents = 0 OR price_cents >= 50);

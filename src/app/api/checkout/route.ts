@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!stream || stream.ended_at) return NextResponse.redirect(`${appUrl()}/`, 303);
 
   const watchUrl = `${appUrl()}/streams/${stream.id}`;
-  if (stream.streamer_id === session.id || (await hasTicket(stream.id, session.id))) {
+  if (stream.price_cents === 0 || stream.streamer_id === session.id || (await hasTicket(stream.id, session.id))) {
     return NextResponse.redirect(watchUrl, 303);
   }
 

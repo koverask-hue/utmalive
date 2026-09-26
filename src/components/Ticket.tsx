@@ -1,4 +1,4 @@
-import { euro } from "@/lib/format";
+import { price } from "@/lib/format";
 
 // The gold ticket stub: the one loud object on the site. Main body on the left,
 // a torn-off stub on the right joined by a perforated edge.
@@ -26,7 +26,7 @@ export default function Ticket({
         {children && <div className="ticket-action">{children}</div>}
       </div>
       <div className="ticket-stub" aria-hidden>
-        <span className="ticket-price">{euro(priceCents)}</span>
+        <span className="ticket-price">{price(priceCents)}</span>
         <span className="ticket-serial">No. {serial}</span>
       </div>
     </div>

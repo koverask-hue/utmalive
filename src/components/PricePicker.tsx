@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Ticket from "./Ticket";
 
-const PRESETS = [2, 3, 5, 10];
+const PRESETS = [0, 2, 3, 5, 10];
 
 export default function PricePicker({ defaultPrice, streamer }: { defaultPrice: number; streamer: string }) {
   const [price, setPrice] = useState(String(defaultPrice));
@@ -23,15 +23,15 @@ export default function PricePicker({ defaultPrice, streamer }: { defaultPrice: 
           <div className="chips" role="group" aria-labelledby="price-label">
             {PRESETS.map((p) => (
               <button type="button" key={p} className={`chip ${Number(price) === p ? "on" : ""}`} onClick={() => setPrice(String(p))} aria-pressed={Number(price) === p}>
-                €{p}
+                {p === 0 ? "Free" : `€${p}`}
               </button>
             ))}
             <div className="price-input">
               <span aria-hidden>€</span>
-              <input name="price" type="number" inputMode="decimal" step="0.01" min="0.50" max="500" value={price} onChange={(e) => setPrice(e.target.value)} required aria-labelledby="price-label" />
+              <input name="price" type="number" inputMode="decimal" step="0.01" min="0" max="500" value={price} onChange={(e) => setPrice(e.target.value)} required aria-labelledby="price-label" />
             </div>
           </div>
-          {tooLow && <small className="error">The lowest price card payments allow is €0.50.</small>}
+          {tooLow && <small className="error">Use 0 for a free stream, or at least €0.50. Card payments can&apos;t go lower.</small>}
         </div>
       </div>
       <div className="preview">

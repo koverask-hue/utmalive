@@ -1,3 +1,8 @@
+// 0 reads as "Free": free streams need no ticket.
+export function price(cents: number) {
+  return cents === 0 ? "Free" : euro(cents);
+}
+
 export function euro(cents: number) {
   return new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" }).format(cents / 100);
 }

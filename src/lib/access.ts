@@ -7,6 +7,7 @@ export async function streamAccess(streamId: string): Promise<{ session: Session
   if (!session) return null;
   const stream = await getStream(streamId);
   if (!stream) return null;
-  if (stream.streamer_id !== session.id && !(await hasTicket(stream.id, session.id))) return null;
+  const free = stream.price_cents === 0;
+  if (!free && stream.streamer_id !== session.id && !(await hasTicket(stream.id, session.id))) return null;
   return { session, stream };
 }
