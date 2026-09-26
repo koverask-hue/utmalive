@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Live streams for members of the 8live Discord server.",
 };
 
-export const viewport: Viewport = { themeColor: "#060816", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#0c0506", colorScheme: "dark" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();

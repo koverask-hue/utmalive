@@ -18,7 +18,7 @@ export default function Logo({ height = 30 }: { height?: number }) {
       <defs>
         <linearGradient id="logo-ink" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="38">
           <stop offset="0.3" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#9fb4ff" />
+          <stop offset="1" stopColor="#ffb3a8" />
         </linearGradient>
         <filter id="logo-glow" x="-100%" y="-100%" width="300%" height="300%">
           <feGaussianBlur stdDeviation="3.5" />

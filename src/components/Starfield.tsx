@@ -38,7 +38,7 @@ export default function Starfield() {
           r: 0.25 + z * z * 1.4,
           tw: Math.random() * Math.PI * 2,
           // Mostly white-blue, a few warm stars.
-          hue: Math.random() < 0.12 ? 38 : 220,
+          hue: Math.random() < 0.25 ? 18 : 30,
         };
       });
     }
@@ -89,8 +89,8 @@ export default function Starfield() {
             continue;
           }
           const tail = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * 140, m.y - m.vy * 140);
-          tail.addColorStop(0, `rgba(234, 240, 255, ${m.life})`);
-          tail.addColorStop(1, "rgba(234, 240, 255, 0)");
+          tail.addColorStop(0, `rgba(255, 236, 228, ${m.life})`);
+          tail.addColorStop(1, "rgba(255, 236, 228, 0)");
           ctx.strokeStyle = tail;
           ctx.lineWidth = 1.4;
           ctx.beginPath();
