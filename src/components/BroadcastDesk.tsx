@@ -143,8 +143,9 @@ export default function BroadcastDesk({ room, onChange }: { room: Room; onChange
                 },
                 {
                   screenShareEncoding: q.encoding,
-                  videoCodec: "vp9",
-                  backupCodec: true,
+                  // H.264 uses the computer's video chip (Macs have no VP9 hardware
+                  // encoder), so it holds resolution and fps with less CPU.
+                  videoCodec: "h264",
                   degradationPreference: mode === "motion" ? "maintain-framerate" : "maintain-resolution",
                 },
               );
@@ -158,7 +159,7 @@ export default function BroadcastDesk({ room, onChange }: { room: Room; onChange
             }
           }
         }
-        if (what === "camera") await lp.setCameraEnabled(!camOn, { resolution: QUALITY.hd.preset.resolution }, { videoCodec: "vp9", backupCodec: true });
+        if (what === "camera") await lp.setCameraEnabled(!camOn, { resolution: QUALITY.hd.preset.resolution }, { videoCodec: "h264" });
         if (what === "mic") await lp.setMicrophoneEnabled(!micOn, { echoCancellation: true, noiseSuppression: true, autoGainControl: true });
         if (what !== "screen") loadDevices();
       } catch (err) {
